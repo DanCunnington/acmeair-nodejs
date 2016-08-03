@@ -9,10 +9,10 @@
 	"mongoPort" : 27017,
 	"mongoConnectionPoolSize": 10,
 
-	"cloudant_host": "your host",
+	"cloudant_host": "75c33a58-4028-43d1-bfd6-4d2f27d8623f-bluemix.cloudant.com",
 	"cloudant_port": 443,
-	"cloudant_username": "your username",
-	"cloudant_password":"your password",
+	"cloudant_username": "75c33a58-4028-43d1-bfd6-4d2f27d8623f-bluemix",
+	"cloudant_password":"e1910bd27ed09f1914d7605b3c1d1eccb48445fab3a69dd8c18f6b045bd803ba",
 	"cloudant_httpclient.maxTotal":200,
 	"cloudant_httpclient.maxPerRoute":100,
 	"cloudant_httpclient.soTimeout":5000,
