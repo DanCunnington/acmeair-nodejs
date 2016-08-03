@@ -48,6 +48,8 @@ if (authServiceLocation)
 	}
 }
 
+
+
 var dbtype = process.env.dbtype || "mongo";
 
 // Calculate the backend datastore type if run inside BLuemix or cloud foundry
@@ -68,6 +70,10 @@ var loader = new require('./loader/loader.js')(routes, settings);
 // Setup express with 4.0.0
 
 var app = express();
+var server = require('http').Server(app);
+
+var appmetrics = require('appmetrics-web').start({app: app, express: express, server: server });
+
 var morgan         = require('morgan');
 var bodyParser     = require('body-parser');
 var methodOverride = require('method-override');
@@ -189,6 +195,6 @@ function initDB(){
 function startServer() {
 	if (serverStarted ) return;
 	serverStarted = true;
-	app.listen(port);   
+	server.listen(port);   
 	logger.info("Express server listening on port " + port);
 }
