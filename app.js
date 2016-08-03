@@ -13,11 +13,12 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
+var dotenv = require('dotenv');
 var express = require('express')
   , http = require('http')
   , fs = require('fs')
-  , log4js = require('log4js');
+  , log4js = require('log4js')
+  , cfenv = require('cfenv');
 var settings = JSON.parse(fs.readFileSync('settings.json', 'utf8'));
 
 var logger = log4js.getLogger('app');
@@ -195,6 +196,16 @@ function initDB(){
 function startServer() {
 	if (serverStarted ) return;
 	serverStarted = true;
-	server.listen(port);   
+	//server.listen(port);   
+	// get the app environment from Cloud Foundry
+	var appEnv = cfenv.getAppEnv();
+
+	// start server on the specified port and binding host
+	server.listen(appEnv.port, '0.0.0.0', function() {
+	  // print a message when the server starts listening
+	  console.log("server starting on " + appEnv.url);
+	});
+
+
 	logger.info("Express server listening on port " + port);
 }

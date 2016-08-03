@@ -62,7 +62,7 @@ module.exports = function (settings) {
 		var dbConfig ;
 		if(process.env.VCAP_SERVICES){
 			var env = JSON.parse(process.env.VCAP_SERVICES);
-	        longger.log("env: %j",env);
+	        //logger.log("env: %j",env);
 			var serviceKey = Object.keys(env)[0];
 			dbConfig = env[serviceKey][0]['credentials'];
 		}
