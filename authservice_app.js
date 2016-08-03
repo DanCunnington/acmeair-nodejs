@@ -13,15 +13,20 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
 var fs = require('fs');
 var settings = JSON.parse(fs.readFileSync('settings.json', 'utf8'));
+var util = require('./util/util');
+
 var log4js = require('log4js');
+
+log4js.configure('log4js.json', {});
 var logger = log4js.getLogger('authservice_app');
 logger.setLevel(settings.loggerLevel);
 
 var port = (process.env.VMC_APP_PORT || process.env.VCAP_APP_PORT || settings.authservice_port);
 var host = (process.env.VCAP_APP_HOST || 'localhost');
+
+util.registerService(process.env.SERVICE_NAME, port);
 
 logger.info("host:port=="+host+":"+port);
 
@@ -39,30 +44,53 @@ if(process.env.VCAP_SERVICES){
 }
 logger.info("db type=="+dbtype);
 
-var routes = new require('./authservice/routes/index.js')(dbtype,settings); 
-
 // call the packages we need
 var express    = require('express'); 		
 var app        = express(); 				
 var morgan         = require('morgan');
+var bodyParser     = require('body-parser');
+var cookieParser = require('cookie-parser');
 
 if (settings.useDevLogger)
 	app.use(morgan('dev'));                     		// log every request to the console
 
-var router = express.Router(); 		
+//create application/json parser
+var jsonParser = bodyParser.json();
+// create application/x-www-form-urlencoded parser
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
-router.post('/byuserid/:user', createToken);
-router.get('/:tokenid', validateToken);
-router.get('/status', checkStatus);
-router.delete('/:tokenid', invalidateToken);
+app.use(jsonParser);
+app.use(urlencodedParser);
 
-// REGISTER OUR ROUTES so that all of routes will have prefix 
-app.use(settings.authContextRoot+'/authtoken', router);
+//parse an HTML body into a string
+app.use(bodyParser.text({ type: 'text/html' }));
+app.use(cookieParser()); 
 
+var router = express.Router(); 	
+var routes;
+var loader;
 var initialized = false;
 var serverStarted = false;
 
-initDB();
+
+util.getServiceProxy(function(proxyUrl){
+		
+	proxy =  (proxyUrl || process.env.PROXY);
+	routes = new require('./authservice/routes/index.js')(false,null,proxy,dbtype,settings); 
+	loader = new require('./loader/loader.js')(routes, settings);
+
+	router.post('/login', routes.login);
+	router.get('/login/logout', routes.logout);
+	router.get('/login/authcheck/:tokenid', routes.authcheck);
+	router.get('/login/config/countSessions', routes.countCustomerSessions);
+	router.get('/login/loader/load', clearSessionDatabase);
+
+	// REGISTER OUR ROUTES so that all of routes will have prefix 
+	app.use(settings.authContextRoot, router);
+
+
+	initDB();
+});
 
 function initDB(){
     if (initialized ) return;
@@ -80,6 +108,17 @@ function initDB(){
 	});
 }
 
+function clearSessionDatabase(req, res){
+	if (!initialized)
+     	{
+		logger.info("please wait for db connection initialized then trigger again.");
+		initDB();
+		res.sendStatus(400);
+	}else {
+		loader.clearSessionDatabase(req, res);
+	}
+}
+
 
 function startServer() {
 	if (serverStarted ) return;
@@ -87,66 +126,3 @@ function startServer() {
 	app.listen(port);
 	console.log('Application started port ' + port);
 }
-
-function checkStatus(req, res){
-	res.sendStatus(200);
-}
-
-function createToken(req, res){
-	logger.debug('create token by user ' + req.params.user);
-	if (!initialized)
-    {
-		logger.info("please wait for db connection initialized then trigger again.");
-		initDB();
-		res.send(403);
-	}else
-	{
-		routes.createSessionInDB(req.params.user, function(error, cs){
-		if (error){
-		 	res.status(404).send(error);
-		}
-		else{
-			res.send(JSON.stringify(cs));
-		}
-	    })
-	}
-}
-
-function validateToken(req, res){
-	logger.debug('validate token ' + req.params.tokenid);
-	if (!initialized)
-    {
-		logger.info("please wait for db connection initialized then trigger again.");
-		initDB();
-		res.send(403);
-	}else
-	{
-		routes.validateSessionInDB(req.params.tokenid, function(error, cs){
-	     if (error){
-		 	res.status(404).send(error);
-		}
-		else{
-			 res.send(JSON.stringify(cs));
-		}
-	    })
-	}
-}
-
-function invalidateToken(req, res){
-	logger.debug('invalidate token ' + req.params.tokenid);
-	if (!initialized)
-    {
-		logger.info("please wait for db connection initialized then trigger again.");
-		initDB();
-		res.send(403);
-	}else
-	{
-		routes.invalidateSessionInDB(req.params.tokenid, function(error){
-		if (error){
-		 	res.status(404).send(error);
-		}
-		else res.sendStatus(200);
-	    })
-	}
-}
-

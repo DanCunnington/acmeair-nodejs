@@ -23,12 +23,15 @@
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dijit/themes/claro/claro.css">
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dijit/themes/dijit.css">
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dojox/grid/resources/claroGrid.css">
+  <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
   
   <script type="text/javascript" src="js/acmeair-common.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.7.1/dojo/dojo.js" djConfig="parseOnLoad: true"></script>
 
   <script>
+  
 	dojo.require("dojo.parser");
+	
 			
 	dojo.require("dijit.Dialog");
 	dojo.require("dijit.layout.StackContainer");
@@ -52,6 +55,7 @@
 		var fromDate = dijit.byId('fromDate').get('value');
 		var returnDate = dijit.byId('toDate').get('value');
 		var oneWayChecked = dijit.byId('oneWayCheck').checked;
+	
 		dojo.xhrPost({
 			content : {
 				fromAirport: fromAirport,
@@ -60,7 +64,7 @@
 				returnDate: returnDate,
 				oneWay: oneWayChecked
 			},
-			url: 'rest/api/flights/queryflights',
+			url: 'http://' + window.location.host + '/flight/acmeair-fs/rest/api/flights/queryflights',
 			handleAs: "json",
 			load: function(response, ioArgs) {
 				if (response.tripFlights.length == 0) {
@@ -124,7 +128,7 @@
 			
 	dojo.addOnLoad(pageLoaded);
 			
-	function pageLoaded() {
+	function pageLoaded() {    	
 	   	updateLoggedInUserWelcome();
 	}
 		    
@@ -219,7 +223,7 @@
 		
 		dojo.xhrPost({
 			content : xhrContent,
-			url : 'rest/api/bookings/bookflights',
+			url: 'http://' + window.location.host + '/booking/acmeair-bs/rest/api/bookings/bookflights',
 			handleAs: "json",
 			load : function(response, ioArgs) {
 				dojo.byId("bookingToFlight").innerHTML = response.departBookingId;
@@ -320,6 +324,7 @@
 			<div id="toolbar5.login" data-dojo-type="dijit.form.Button" data-dojo-props='showLabel:true' onClick="showLoginDialog()">Login</div>
 			<div id="toolbar5.logout" data-dojo-type="dijit.form.Button" data-dojo-props='showLabel:true' onClick="logout()">Logout</div>
 			<div id="toolbar5.account" data-dojo-type="dijit.form.Button" data-dojo-props='showLabel:true' onClick="window.location='customerprofile.html'">Account</div>
+		    <div id="toolbar5.support" data-dojo-type="dijit.form.Button" data-dojo-props='showLabel:true' onClick="window.location='support.html'">Support</div>
 		</div>
 		
 		<div class="content">

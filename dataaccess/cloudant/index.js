@@ -28,6 +28,8 @@ module.exports = function (settings) {
     var module = {};
     
     var log4js = require('log4js');
+    
+    log4js.configure('log4js.json', {});
     var logger = log4js.getLogger('dataaccess/cloudant');
     logger.setLevel(settings.loggerLevel);
 
@@ -41,7 +43,7 @@ module.exports = function (settings) {
     }
 
     var dbConfig = calculateDBConfig();
-    var nano = require('nano')(dbConfig.hosturl); // may need to set the connection pool here.
+    var nano = require('nano')(dbConfig.url); // may need to set the connection pool here.
 
     // TODO does cache the db by dbName improve performance?
     var nanoDBs = {};
@@ -62,7 +64,7 @@ module.exports = function (settings) {
 		var dbConfig ;
 		if(process.env.VCAP_SERVICES){
 			var env = JSON.parse(process.env.VCAP_SERVICES);
-	        //logger.log("env: %j",env);
+	        logger.info("env: %j",env);
 			var serviceKey = Object.keys(env)[0];
 			dbConfig = env[serviceKey][0]['credentials'];
 		}
@@ -85,6 +87,47 @@ module.exports = function (settings) {
 		logger.info("Cloudant config:"+JSON.stringify(dbConfig));
 		return dbConfig;
 	}
+
+	module.initialize = function (callback) {
+    	var itemsProcessed = 0;
+    	for(var dbName in module.dbNames){
+		    (function(tempDbName){
+ 			  nano.db.destroy(tempDbName, function() {
+    			nano.db.create(tempDbName, function() {
+					  if (tempDbName == 'n_booking'){
+					    nanoDBs[tempDbName].insert({ "views": {},"language": "javascript","indexes":{ "n_bookings":{ "analyzer": "standard", "index":"function(doc){index(\"default\", doc._id);if(doc.customerId){index(\"customerId\", doc.customerId, {\"store\": \"yes\"});}}"}}},
+					      '_design/view', function (error, response) {console.log(tempDbName + " Search Index is created");});
+					  }
+					  if (tempDbName == 'n_flight'){
+					    nanoDBs[tempDbName].insert({ "views": {},"language": "javascript","indexes":{ "n_flights":{ "analyzer": "standard", "index":"function(doc){index(\"default\", doc._id);if(doc.flightSegmentId){index(\"flightSegmentId\", doc.flightSegmentId, {\"store\": \"yes\"});}if(doc.scheduledDepartureTime){index(\"scheduledDepartureTime\", doc.scheduledDepartureTime, {\"store\": \"yes\"});}}"}}},
+					      '_design/view', function (error, response) {console.log(tempDbName + " Search Index is created");});
+					  }
+					  if (tempDbName == 'n_flightsegment'){
+					    nanoDBs[tempDbName].insert({ "views": {},"language": "javascript","indexes":{ "n_flightsegments":{ "analyzer": "standard", "index":"function(doc){index(\"default\", doc._id);if(doc.originPort){index(\"originPort\", doc.originPort, {\"store\": \"yes\"});}if(doc.destPort){index(\"destPort\", doc.destPort, {\"store\": \"yes\"});}}"}}},
+					      '_design/view', function (error, response) {console.log(tempDbName + " Search Index is created");});
+					  }
+					  if (tempDbName == 'n_customersession'){
+					    nanoDBs[tempDbName].insert({ "views": {},"language": "javascript","indexes":{ "n_customersessions":{ "analyzer": "standard", "index":"function(doc){index(\"default\", doc._id);if(doc.customerid){index(\"customerid\", doc.customerid, {\"store\": \"yes\"});}}"}}},
+					      '_design/view', function (error, response) {console.log(tempDbName + " Search Index is created");});
+					  }
+					  
+ 				  itemsProcessed++;
+    				if(itemsProcessed === Object.keys(module.dbNames).length) {
+    				  nano.db.list(function(err, body) {
+    				    // body is an array
+    					  console.log("List all the Cloudant DB");
+    				    body.forEach(function(db) {
+    				      console.log(db);
+    				    });
+    				  });
+					  callback();
+    				}   				  
+    			});
+    		  });
+			})(module.dbNames[dbName]);
+    	}
+	};
+
 
     module.insertOne = function (collectionname, doc, callback /* (error, doc) */) {
     	nanoDBs[collectionname].insert(doc, doc._id, function(err, doc){
@@ -174,9 +217,16 @@ module.exports = function (settings) {
 		return docs;
 	}
 
-	//TODO Implement count method for cloudant -- currently a stub returning -1
 	module.count = function(collectionname, condition, callback/* (error, docs) */) {
-		callback(null, -1);
+		nano.db.get(collectionname,function(err, body){
+          if (err){
+			logger.error("count hit error:"+err);
+			callback(err, -1);
+		  }
+		  else{
+            callback(null, body.doc_count);
+		  }
+        });
 	};
 	
 	return module;

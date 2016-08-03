@@ -29,6 +29,7 @@ module.exports = function (settings) {
 	var cassandraDB = require('cassandra-driver');
 	var log4js = require('log4js');
 	
+	log4js.configure('log4js.json', {});
 	var logger = log4js.getLogger('dataaccess/cassandra');
 	logger.setLevel(settings.loggerLevel);
 
@@ -80,6 +81,11 @@ module.exports = function (settings) {
 		});
 	}
 
+    module.initialize = function (callback) {
+    	//TODO : Delete DB & create DB if necessary
+    	callback();
+	};
+	
 	module.insertOne = function (collectionname, doc, callback /* (error, insertedDocument) */) {
 		dbclient.execute(upsertStmt[collectionname], getUpsertParam(collectionname,doc), {prepare: true}, function(err) {
 			  if (err) {callback(err, null);}

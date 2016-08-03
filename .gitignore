@@ -8,3 +8,5 @@
 /target
 npm-debug.log
 settings.json
+acmeair_node.log
+*.log

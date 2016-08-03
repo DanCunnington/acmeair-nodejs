@@ -50,31 +50,48 @@ Cloudant:
 
 #### You must first deploy the Acmeair in Monolithic mode before proceeding.
 
-#### Push the authentication service
+#### Push the extra services
 
-	cf push acmeair-authservice --no-start -c "node authservice-app.js"
+	cf push acmeair-as  --no-start -c "node authservice_app.js"
+	cf push acmeair-cs  --no-start -c "node customerservice_app.js"
+	cf push acmeair-fbs --no-start -c "node flightbookingservice_app.js"
 
-Again, "acmeair-authservice" needs to be unique.
+Again, the application names needs to be unique.
+
+#### Bind the mongodb service to service applications
+	
+	cf bind-service acmeair-as acmeairMongo
+	cf bind-service acmeair-cs acmeairMongo
+	cf bind-service acmeair-fbs acmeairMongo
+	
+	or
+	
+	cf bind-service acmeair-as acmeairCL
+	cf bind-service acmeair-cs acmeairCL
+	cf bind-service acmeair-fbs acmeairCL
 
 #### Now that the authentication service is running, you can configure the web application to use it by setting the following user defined environment 
 
 variable stopping the application first
 
-
 	cf stop acmeair-nodejs
-	cf set-env acmeair-nodejs AUTH_SERVICE acmeair-authservice.mybluemix.net:80
+	cf set-env acmeair-nodejs AUTH_SERVICE acmeair-as.mybluemix.net:80
+	cf set-env acmeair-nodejs CUSTOMER_SERVICE acmeair-cs.mybluemix.net:80
+	cf set-env acmeair-nodejs FLIGHTBOOKING_SERVICE acmeair-authservice.mybluemix.net:80 acmeair-fbs.mybluemix.net:80
 
 #### Enable Hystrix by setting the following user defined environment variable
 
 	cf set-env acmeair-nodejs enableHystrix true
 
-#### Now start the authentication service and the web application
 
+#### Now start the services and the web application
 
-	cf start acmeair-authservice
+	cf start acmeair-as
+	cf start acmeair-cs
+	cf start acmeair-fbs
 	cf start acmeair-nodejs
 
-	Now go to http://acmeair-nodejs.mybluemix.net and login. That login uses the authentication microservice.
+	Now go to http://acmeair-nodejs.mybluemix.net and login. That login uses the authentication microservice. 
 
 #### You can run the Hystrix Dashboard in Bluemix as well. To deploy the Hystrix dashboard, you need to download the WAR file for the dashboard. You
 can find a link to the download here: https://github.com/Netflix/Hystrix/wiki/Dashboard#installing-the-dashboard. The following CF CLI command will deploy 

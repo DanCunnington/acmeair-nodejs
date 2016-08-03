@@ -1,3 +1,4 @@
+
 # Acme Air in NodeJS 
 
 An implementation of the Acme Air sample application for NodeJS.  This implementation can support multiple datastores, can run in several application modes, and can support running on a variety of runtime platforms including standalone bare metal  system, Virtual Machines, docker containers, IBM Bluemix, IBM Bluemix Container Service.
@@ -43,30 +44,31 @@ Assume MongoDB started on 127.0.0.1:27017
 ### Resolve module dependencies
 
 	npm install
+	node_modules/.bin/npm install 
 
 ### Run Acmeair in Monolithic on Local
 
-	node app.js
-		
-		
-### Run Acmeair in Micro-Service on Local
+	node monolithic_app.js
+	
+### Access Monolithic Application 
 
-	node authservice-app.js
-	set AUTH_SERVICE=localhost:9443 or export AUTH_SERVICE=localhost:9443
-	node app.js
-	
-### Run Acmeair in Micro-Service with Netflix Hystrix Stream enabled on Local
+	http://localhost:9085/acmeair-monolithic	
 
-	node authservice-app.js
-	set AUTH_SERVICE=localhost:9443 or export AUTH_SERVICE=localhost:9443
-	set enableHystrix=true or export enableHystrix=true
+### Run Acmeair in Micro-Service on Local (See Docker Instructions -> much easier)
 	
-	node app.js
+	install nginx and startup using the nginx.conf file
 	
+	node authservice_app.js
+	node customerservice_app.js	
+	node flightservice_app.js
+	node bookingservice_app.js
+	node main_app.js
 	
-### Access Application 
+	*ports are hardcoded in nginx.conf and settings.json
+	
+### Access Micro-Service Application 
 
-	http://localhost:9080/
+	http://localhost/acmeair
 	
 	Load Database 
 		preload 10k customers uid[0..9999]@email.com:password, 5 days' flights.  Defined in loader/loader-settings.json
@@ -78,9 +80,6 @@ Assume MongoDB started on 127.0.0.1:27017
 	Account
 		update account info
 	Logout	
-	
-	If hystrix is enabled, it is available at : http://localhost:9080/rest/api/hystrix.stream
-	
 	
 	
 ## More on Configurations
@@ -141,9 +140,4 @@ MAX_FLIGHTS_PER_DAY | 1 | max flights per day
 * Create a folder under dataaccess with the new dbtype name. Look at current implementation for reference.
 
 
-### Data consistency with Acmeair Java
-
-The data format is NOT the same as Acmeair Java. The impact:
-
-* You can not share database with Acmeair Java. 
 * When drive acmeair workload, you need follow the [instruction](https://github.com/acmeair/acmeair/wiki/jMeter-Workload-Instructions) to use -DusePureIDs=true when starting jmeter.

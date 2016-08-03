@@ -1,0 +1,83 @@
+{
+  "appenders": [
+    {
+      "type": "file",
+      "filename": "acmeair_main.log",
+      "maxLogSize": 20480,
+      "backups": 3,
+      "category": "main_app"
+    },{
+        "type": "file",
+        "filename": "acmeair_auth.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "authservice_app"
+      },{
+        "type": "file",
+        "filename": "acmeair_auth.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "authservice"
+      },{
+        "type": "file",
+        "filename": "acmeair_book.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "bookingservice_app"
+      },{
+        "type": "file",
+        "filename": "acmeair_book.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "bookingservice"
+      },{
+        "type": "file",
+        "filename": "acmeair_customer.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "customerservice_app"
+      },{
+        "type": "file",
+        "filename": "acmeair_customer.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "customerservice"
+      },{
+        "type": "file",
+        "filename": "acmeair_flight.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "flightservice_app"
+      },{
+        "type": "file",
+        "filename": "acmeair_flight.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "flightservice"
+      },{
+        "type": "file",
+        "filename": "acmeair_mono.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "monolithic_app"
+      },{
+        "type": "file",
+        "filename": "acmeair_mono.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "monolithic"
+      },{
+        "type": "file",
+        "filename": "acmeair_support.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "support"
+      },{
+        "type": "file",
+        "filename": "acmeair_mongo.log",
+        "maxLogSize": 20480,
+        "backups": 3,
+        "category": "mongo"
+      }
+  ]
+}
