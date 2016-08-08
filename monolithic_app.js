@@ -13,11 +13,13 @@
 * See the License for the specific language governing permissions and
 * limitations under the License.
 *******************************************************************************/
-
+var appmetrics = require('appmetrics-web')
+appmetrics();
 var express = require('express')
   , http = require('http')
   , fs = require('fs')
-  , log4js = require('log4js');
+  , log4js = require('log4js')
+  , cfenv = require('cfenv');
 var settings = JSON.parse(fs.readFileSync('settings.json', 'utf8'));
 var debug = require('debug')('acmeair');
 
@@ -54,6 +56,10 @@ var dataaccess = new require(daModuleName)(settings, "acmeair");
 dbNames = dataaccess.dbNames
 
 var app = express();
+var server = require('http').Server(app);
+
+appmetrics.start({app: app, express: express, server: server });
+
 var morgan         = require('morgan');
 var bodyParser     = require('body-parser');
 var methodOverride = require('method-override');
@@ -110,41 +116,41 @@ function initDB(){
 
 
         	// main app
-        	router.post('/login', login);
-        	router.get('/login/logout', logout);
+        	app.post('/login', login);
+        	app.get('/login/logout', logout);
 
         	// flight service
-        	router.post('/flights/queryflights', authRoutes.checkForValidSessionCookie, flightRoutes.queryflights);
-        	router.post('/bookings/bookflights', authRoutes.checkForValidSessionCookie, bookingRoutes.bookflights);
-        	router.post('/bookings/cancelbooking', authRoutes.checkForValidSessionCookie, bookingRoutes.cancelBooking);
-        	router.get('/bookings/byuser/:user', authRoutes.checkForValidSessionCookie, bookingRoutes.bookingsByUser);
+        	app.post('/flights/queryflights', authRoutes.checkForValidSessionCookie, flightRoutes.queryflights);
+        	app.post('/bookings/bookflights', authRoutes.checkForValidSessionCookie, bookingRoutes.bookflights);
+        	app.post('/bookings/cancelbooking', authRoutes.checkForValidSessionCookie, bookingRoutes.cancelBooking);
+        	app.get('/bookings/byuser/:user', authRoutes.checkForValidSessionCookie, bookingRoutes.bookingsByUser);
 
-        	router.get('/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.getCustomerById);
-        	router.post('/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.putCustomerById);
+        	app.get('/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.getCustomerById);
+        	app.post('/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.putCustomerById);
 
         	// probably main app?
-        	router.get('/config/runtime', routes.getRuntimeInfo);
-        	router.get('/config/dataServices', routes.getDataServiceInfo);
-        	router.get('/config/activeDataService', routes.getActiveDataServiceInfo);
-        	router.get('/config/countBookings', routes.countBookings);
-        	router.get('/config/countCustomers', routes.countCustomer);
-        	router.get('/config/countSessions', routes.countCustomerSessions);
-        	router.get('/config/countFlights', routes.countFlights);
-        	router.get('/config/countFlightSegments', routes.countFlightSegments);
-        	router.get('/config/countAirports' , routes.countAirports);
-        	//router.get('/loaddb', startLoadDatabase);
-        	router.get('/loader/load', startLoadDatabase);
-        	router.get('/loader/query', loader.getNumConfiguredCustomers);
+        	app.get('/config/runtime', routes.getRuntimeInfo);
+        	app.get('/config/dataServices', routes.getDataServiceInfo);
+        	app.get('/config/activeDataService', routes.getActiveDataServiceInfo);
+        	app.get('/config/countBookings', routes.countBookings);
+        	app.get('/config/countCustomers', routes.countCustomer);
+        	app.get('/config/countSessions', routes.countCustomerSessions);
+        	app.get('/config/countFlights', routes.countFlights);
+        	app.get('/config/countFlightSegments', routes.countFlightSegments);
+        	app.get('/config/countAirports' , routes.countAirports);
+        	//app.get('/loaddb', startLoadDatabase);
+        	app.get('/loader/load', startLoadDatabase);
+        	app.get('/loader/query', loader.getNumConfiguredCustomers);
 
         	// ?
-        	router.get('/checkstatus', checkStatus);
+        	app.get('/checkstatus', checkStatus);
 
         	//Set SUPPORT_SERVICE environment variable = true to use this service
         	if (process.env.SUPPORT_SERVICE){
 
         		//for REST API watson dialog service
-        		router.get('/WatsonSupportInit', supportRoutes.getSupportInitInfo);
-        		router.post('/WatsonSupportService', supportRoutes.getSupportService);
+        		app.get('/WatsonSupportInit', supportRoutes.getSupportInitInfo);
+        		app.post('/WatsonSupportService', supportRoutes.getSupportService);
         	}
 
 
@@ -152,7 +158,7 @@ function initDB(){
         	if (process.env.WEBSOCKET_SERVICE){
         		var ws = require('ws').Server;
         		//for websocket watson dialog service
-        		router.get('/support', supportRoutes.getSupportWSPort);
+        		app.get('/support', supportRoutes.getSupportWSPort);
 
         		var websocket = new require('./websocketservice/index.js')(flightRoutes, settings);
         		debug("websocketPort", settings.websocketPort );
@@ -191,6 +197,12 @@ function startLoadDatabase(req, res){
 }
 
 function startServer() {
-	app.listen(port);   
+	var appEnv = cfenv.getAppEnv();
+
+    // start server on the specified port and binding host
+    server.listen(appEnv.port, '0.0.0.0', function() {
+      // print a message when the server starts listening
+      console.log("server starting on " + appEnv.url);
+    });  
 	logger.info("Express server listening on port " + port);
 }
