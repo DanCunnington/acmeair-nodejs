@@ -116,41 +116,41 @@ function initDB(){
 
 
         	// main app
-        	app.post('/login', login);
-        	app.get('/login/logout', logout);
+        	app.post('/rest/api/login', login);
+        	app.get('/rest/api/login/logout', logout);
 
         	// flight service
-        	app.post('/flights/queryflights', authRoutes.checkForValidSessionCookie, flightRoutes.queryflights);
-        	app.post('/bookings/bookflights', authRoutes.checkForValidSessionCookie, bookingRoutes.bookflights);
-        	app.post('/bookings/cancelbooking', authRoutes.checkForValidSessionCookie, bookingRoutes.cancelBooking);
-        	app.get('/bookings/byuser/:user', authRoutes.checkForValidSessionCookie, bookingRoutes.bookingsByUser);
+        	app.post('/rest/api/flights/queryflights', authRoutes.checkForValidSessionCookie, flightRoutes.queryflights);
+        	app.post('/rest/api/bookings/bookflights', authRoutes.checkForValidSessionCookie, bookingRoutes.bookflights);
+        	app.post('/rest/api/bookings/cancelbooking', authRoutes.checkForValidSessionCookie, bookingRoutes.cancelBooking);
+        	app.get('/rest/api/bookings/byuser/:user', authRoutes.checkForValidSessionCookie, bookingRoutes.bookingsByUser);
 
-        	app.get('/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.getCustomerById);
-        	app.post('/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.putCustomerById);
+        	app.get('/rest/api/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.getCustomerById);
+        	app.post('/rest/api/customer/byid/:user', authRoutes.checkForValidSessionCookie, customerRoutes.putCustomerById);
 
         	// probably main app?
-        	app.get('/config/runtime', routes.getRuntimeInfo);
-        	app.get('/config/dataServices', routes.getDataServiceInfo);
-        	app.get('/config/activeDataService', routes.getActiveDataServiceInfo);
-        	app.get('/config/countBookings', routes.countBookings);
-        	app.get('/config/countCustomers', routes.countCustomer);
-        	app.get('/config/countSessions', routes.countCustomerSessions);
-        	app.get('/config/countFlights', routes.countFlights);
-        	app.get('/config/countFlightSegments', routes.countFlightSegments);
-        	app.get('/config/countAirports' , routes.countAirports);
+        	app.get('/rest/api/config/runtime', routes.getRuntimeInfo);
+        	app.get('/rest/api/config/dataServices', routes.getDataServiceInfo);
+        	app.get('/rest/api/config/activeDataService', routes.getActiveDataServiceInfo);
+        	app.get('/rest/api/config/countBookings', routes.countBookings);
+        	app.get('/rest/api/config/countCustomers', routes.countCustomer);
+        	app.get('/rest/api/config/countSessions', routes.countCustomerSessions);
+        	app.get('/rest/api/config/countFlights', routes.countFlights);
+        	app.get('/rest/api/config/countFlightSegments', routes.countFlightSegments);
+        	app.get('/rest/api/config/countAirports' , routes.countAirports);
         	//app.get('/loaddb', startLoadDatabase);
-        	app.get('/loader/load', startLoadDatabase);
-        	app.get('/loader/query', loader.getNumConfiguredCustomers);
+        	app.get('/rest/api/loader/load', startLoadDatabase);
+        	app.get('/rest/api/loader/query', loader.getNumConfiguredCustomers);
 
         	// ?
-        	app.get('/checkstatus', checkStatus);
+        	app.get('/rest/api/checkstatus', checkStatus);
 
         	//Set SUPPORT_SERVICE environment variable = true to use this service
         	if (process.env.SUPPORT_SERVICE){
 
         		//for REST API watson dialog service
-        		app.get('/WatsonSupportInit', supportRoutes.getSupportInitInfo);
-        		app.post('/WatsonSupportService', supportRoutes.getSupportService);
+        		app.get('/rest/api/WatsonSupportInit', supportRoutes.getSupportInitInfo);
+        		app.post('/rest/api/WatsonSupportService', supportRoutes.getSupportService);
         	}
 
 
@@ -158,7 +158,7 @@ function initDB(){
         	if (process.env.WEBSOCKET_SERVICE){
         		var ws = require('ws').Server;
         		//for websocket watson dialog service
-        		app.get('/support', supportRoutes.getSupportWSPort);
+        		app.get('/rest/api/support', supportRoutes.getSupportWSPort);
 
         		var websocket = new require('./websocketservice/index.js')(flightRoutes, settings);
         		debug("websocketPort", settings.websocketPort );
@@ -170,7 +170,7 @@ function initDB(){
         	}
 
         	//REGISTER OUR ROUTES so that all of routes will have prefix 
-        	app.use(settings.monolithicContextRoot, router);
+        	//app.use(settings.monolithicContextRoot, router);
 
     	}
    	  });

@@ -36,10 +36,10 @@
 	"mongoUsername": "mongo",
 	"mongoPassword": "password",
 
-	"cloudant_host": "75c33a58-4028-43d1-bfd6-4d2f27d8623f-bluemix.cloudant.com",
+	"cloudant_host": "0a5c5d49-5161-415c-9dfb-1cc96756efc1-bluemix.cloudant.com",
 	"cloudant_port": 443,
-	"cloudant_username": "75c33a58-4028-43d1-bfd6-4d2f27d8623f-bluemix",
-	"cloudant_password":"e1910bd27ed09f1914d7605b3c1d1eccb48445fab3a69dd8c18f6b045bd803ba",
+	"cloudant_username": "0a5c5d49-5161-415c-9dfb-1cc96756efc1-bluemix",
+	"cloudant_password":"41b02d03d70b160e1c455dabea28ae5a9d44932c36aca73fc51a61bd0873a1da",
 	"cloudant_httpclient.maxTotal":200,
 	"cloudant_httpclient.maxPerRoute":100,
 	"cloudant_httpclient.soTimeout":5000,
